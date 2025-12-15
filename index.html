@@ -827,7 +827,8 @@
     const REPO_OWNER = "kiralzaky01";
     const REPO_NAME = "laporan.github.io";
     const FILE_PATH = "data.json";
-    const TOKEN = "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";
+    const BRANCH = "main"; // atau "master" tergantung branch default repo Anda
+    const TOKEN = "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";
 
     // Local Storage Key for backup/cache
     const STORAGE_KEY = 'laporan-kerja-tasks-cache';
@@ -844,61 +845,106 @@
     // ===============================
     async function loadDataFromGitHub() {
       try {
-        const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FILE_PATH}`;
-        const res = await fetch(url);
+        const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${FILE_PATH}`;
+        console.log('Loading from:', url);
+        
+        const res = await fetch(url, {
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
         if (!res.ok) {
           if (res.status === 404) {
-            return await loadFromLocalCache();
+            console.log('File not found, will create on first save');
+            const cached = await loadFromLocalCache();
+            if (cached.length > 0) {
+              showToast('Info', 'Menggunakan data dari cache lokal', 'success');
+            }
+            return cached;
           }
-          throw new Error('Failed to load data');
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         }
+        
         const data = await res.json();
+        console.log('Loaded from GitHub:', data.length, 'tasks');
         await saveToLocalCache(data);
         return data;
       } catch (error) {
         console.error('Error loading from GitHub:', error);
-        showToast('Peringatan', 'Gagal memuat dari GitHub, menggunakan cache lokal', 'error');
+        showToast('Peringatan', 'Gagal memuat dari GitHub: ' + error.message, 'error');
         return await loadFromLocalCache();
       }
     }
 
     async function saveDataToGitHub(newData) {
       try {
+        console.log('Saving to GitHub...', newData.length, 'tasks');
+        
         const getFileUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-        const getRes = await fetch(getFileUrl, {
-          headers: { Authorization: `Bearer ${TOKEN}` }
-        });
-
+        
+        // Get current file SHA if exists
         let sha = null;
-        if (getRes.ok) {
-          const fileData = await getRes.json();
-          sha = fileData.sha;
+        try {
+          const getRes = await fetch(getFileUrl, {
+            headers: { 
+              'Authorization': `Bearer ${TOKEN}`,
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          });
+
+          if (getRes.ok) {
+            const fileData = await getRes.json();
+            sha = fileData.sha;
+            console.log('File exists with SHA:', sha);
+          } else if (getRes.status === 404) {
+            console.log('File does not exist, will create new');
+          } else {
+            throw new Error(`Failed to check file: ${getRes.status} ${getRes.statusText}`);
+          }
+        } catch (checkError) {
+          console.error('Error checking file:', checkError);
         }
 
+        // Encode content to base64
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(newData, null, 2))));
 
+        // Update or create file
+        const updatePayload = {
+          message: `Update data laporan kerja - ${new Date().toISOString()}`,
+          content: content,
+          branch: BRANCH
+        };
+        
+        if (sha) {
+          updatePayload.sha = sha;
+        }
+
+        console.log('Sending update request...');
         const updateRes = await fetch(getFileUrl, {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${TOKEN}`,
-            "Content-Type": "application/json"
+            'Authorization': `Bearer ${TOKEN}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github.v3+json'
           },
-          body: JSON.stringify({
-            message: "Update data laporan kerja",
-            content: content,
-            sha: sha
-          })
+          body: JSON.stringify(updatePayload)
         });
 
         if (!updateRes.ok) {
-          throw new Error('Failed to save data');
+          const errorText = await updateRes.text();
+          console.error('GitHub API Error:', updateRes.status, errorText);
+          throw new Error(`Failed to save: ${updateRes.status} - ${errorText}`);
         }
 
+        const result = await updateRes.json();
+        console.log('Successfully saved to GitHub:', result.commit.sha);
+        
         await saveToLocalCache(newData);
         return true;
       } catch (error) {
         console.error('Error saving to GitHub:', error);
-        showToast('Error', 'Gagal menyimpan ke GitHub, tersimpan di cache lokal', 'error');
+        showToast('Error', 'Gagal menyimpan ke GitHub: ' + error.message, 'error');
         await saveToLocalCache(newData);
         return false;
       }
