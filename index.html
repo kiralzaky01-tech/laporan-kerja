@@ -60,6 +60,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 16px;
+      position: relative;
     }
 
     .header-left {
@@ -88,6 +89,11 @@
     .header-title p {
       color: var(--muted);
       font-size: 0.875rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
     }
 
     /* Buttons */
@@ -568,6 +574,47 @@
       to { opacity: 1; transform: translateX(0); }
     }
 
+    /* Settings Dropdown */
+    .settings-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      min-width: 220px;
+      z-index: 1000;
+    }
+
+    .settings-dropdown button {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      text-align: left;
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.2s;
+      color: var(--foreground);
+    }
+
+    .settings-dropdown button:hover {
+      background: var(--secondary);
+    }
+
+    .settings-dropdown button:first-child {
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .settings-dropdown button:last-child {
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+
     /* SVG Icons */
     .icon {
       width: 20px;
@@ -601,12 +648,52 @@
             <p id="current-date"></p>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="openModal()" id="add-btn">
-          <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-          </svg>
-          Tambah Pekerjaan
-        </button>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="openModal()" id="add-btn">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            Tambah Pekerjaan
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="openSettingsMenu(event)">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+            </svg>
+          </button>
+        </div>
+        <div id="settings-menu" class="settings-dropdown" style="display: none;">
+          <button onclick="syncWithGitHub()">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Sinkronkan dengan GitHub
+          </button>
+          <button onclick="exportData()">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Ekspor Data
+          </button>
+          <button onclick="document.getElementById('import-file').click()">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            Import Data
+          </button>
+          <button onclick="clearLocalCache()">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+            </svg>
+            Hapus Cache Lokal
+          </button>
+          <button onclick="clearAllData()" style="color: var(--destructive);">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Hapus Semua Data
+          </button>
+        </div>
+        <input type="file" id="import-file" accept=".json" style="display: none;" onchange="handleImportFile(event)">
       </div>
     </div>
   </header>
@@ -705,18 +792,6 @@
       <h2>Tambah Pekerjaan Baru</h2>
       <form id="task-form" onsubmit="handleSubmit(event)">
         <div class="form-group">
-          <label for="title">Judul Pekerjaan</label>
-          <input type="text" id="title" placeholder="Masukkan judul pekerjaan..." required>
-        </div>
-        <div class="form-group">
-          <label for="description">Deskripsi</label>
-          <textarea id="description" placeholder="Jelaskan detail pekerjaan..."></textarea>
-        </div>
-        <div class="form-group">
-          <label for="deadline">Deadline</label>
-          <input type="date" id="deadline" required>
-        </div>
-        <div class="form-group">
           <label for="unit">Unit</label>
           <input type="text" id="unit" placeholder="Masukkan nama unit...">
         </div>
@@ -754,6 +829,9 @@
     const FILE_PATH = "data.json";
     const TOKEN = "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";
 
+    // Local Storage Key for backup/cache
+    const STORAGE_KEY = 'laporan-kerja-tasks-cache';
+
     // ===============================
     // STATE MANAGEMENT
     // ===============================
@@ -769,14 +847,18 @@
         const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FILE_PATH}`;
         const res = await fetch(url);
         if (!res.ok) {
-          if (res.status === 404) return [];
+          if (res.status === 404) {
+            return await loadFromLocalCache();
+          }
           throw new Error('Failed to load data');
         }
-        return await res.json();
+        const data = await res.json();
+        await saveToLocalCache(data);
+        return data;
       } catch (error) {
         console.error('Error loading from GitHub:', error);
-        showToast('Error', 'Gagal memuat data dari GitHub', 'error');
-        return [];
+        showToast('Peringatan', 'Gagal memuat dari GitHub, menggunakan cache lokal', 'error');
+        return await loadFromLocalCache();
       }
     }
 
@@ -812,11 +894,117 @@
           throw new Error('Failed to save data');
         }
 
+        await saveToLocalCache(newData);
         return true;
       } catch (error) {
         console.error('Error saving to GitHub:', error);
-        showToast('Error', 'Gagal menyimpan ke GitHub', 'error');
+        showToast('Error', 'Gagal menyimpan ke GitHub, tersimpan di cache lokal', 'error');
+        await saveToLocalCache(newData);
         return false;
+      }
+    }
+
+    // ===============================
+    // LOCAL CACHE FUNCTIONS (BACKUP)
+    // ===============================
+    async function loadFromLocalCache() {
+      try {
+        const cached = localStorage.getItem(STORAGE_KEY);
+        if (cached) {
+          return JSON.parse(cached);
+        }
+        return [];
+      } catch (error) {
+        console.error('Error loading from cache:', error);
+        return [];
+      }
+    }
+
+    async function saveToLocalCache(data) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (error) {
+        console.error('Error saving to cache:', error);
+      }
+    }
+
+    async function clearLocalCache() {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        showToast('Berhasil', 'Cache lokal berhasil dihapus', 'success');
+      } catch (error) {
+        console.error('Error clearing cache:', error);
+      }
+    }
+
+    // ===============================
+    // EXPORT/IMPORT FUNCTIONS
+    // ===============================
+    async function exportData() {
+      const dataStr = JSON.stringify(tasks, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `laporan-kerja-${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      showToast('Berhasil', 'Data berhasil diekspor', 'success');
+    }
+
+    async function importData(file) {
+      try {
+        const text = await file.text();
+        const importedTasks = JSON.parse(text);
+        
+        if (!Array.isArray(importedTasks)) {
+          throw new Error('Format file tidak valid');
+        }
+        
+        if (confirm(`Import ${importedTasks.length} data? Data yang ada akan diganti.`)) {
+          tasks = importedTasks;
+          await saveDataToGitHub(tasks);
+          renderTasks();
+          showToast('Berhasil', 'Data berhasil diimpor dan disimpan ke GitHub', 'success');
+        }
+      } catch (error) {
+        console.error('Error importing data:', error);
+        showToast('Error', 'Gagal mengimpor data. Pastikan format file benar.', 'error');
+      }
+    }
+
+    async function syncWithGitHub() {
+      if (isLoading) return;
+      isLoading = true;
+      
+      showToast('Info', 'Menyinkronkan dengan GitHub...', 'success');
+      
+      const freshData = await loadDataFromGitHub();
+      tasks = freshData;
+      renderTasks();
+      
+      isLoading = false;
+      showToast('Berhasil', 'Data berhasil disinkronkan dari GitHub', 'success');
+    }
+
+    async function clearAllData() {
+      if (!confirm('Yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan!')) {
+        return;
+      }
+      
+      if (!confirm('Konfirmasi sekali lagi: Hapus SEMUA data?')) {
+        return;
+      }
+      
+      try {
+        tasks = [];
+        await saveDataToGitHub(tasks);
+        await clearLocalCache();
+        renderTasks();
+        showToast('Berhasil', 'Semua data berhasil dihapus', 'success');
+      } catch (error) {
+        console.error('Error clearing data:', error);
+        showToast('Error', 'Gagal menghapus data', 'error');
       }
     }
 
@@ -1185,6 +1373,41 @@
         setTimeout(() => toast.remove(), 300);
       }, 3000);
     }
+
+    // ===============================
+    // SETTINGS MENU
+    // ===============================
+    function openSettingsMenu(event) {
+      event.stopPropagation();
+      const menu = document.getElementById('settings-menu');
+      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function handleImportFile(event) {
+      const file = event.target.files[0];
+      if (file) {
+        importData(file);
+      }
+      event.target.value = '';
+    }
+
+    // Close settings menu when clicking outside
+    document.addEventListener('click', () => {
+      const menu = document.getElementById('settings-menu');
+      if (menu) menu.style.display = 'none';
+    });
   </script>
 </body>
-</html>
+</html>group">
+          <label for="title">Judul Pekerjaan</label>
+          <input type="text" id="title" placeholder="Masukkan judul pekerjaan..." required>
+        </div>
+        <div class="form-group">
+          <label for="description">Deskripsi</label>
+          <textarea id="description" placeholder="Jelaskan detail pekerjaan..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="deadline">Deadline</label>
+          <input type="date" id="deadline" required>
+        </div>
+        <div class="form-
